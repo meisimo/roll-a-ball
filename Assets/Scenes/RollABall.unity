@@ -885,7 +885,7 @@ PrefabInstance:
         type: 3}
       propertyPath: allLabyrinthFragments.Array.data[0]
       value: 
-      objectReference: {fileID: 2539699523015181955, guid: ff37ce0cbbc3f5d4189c5ed0146359b9,
+      objectReference: {fileID: 307894632062166258, guid: 65641479a97547c40b3f9c9bcd529f12,
         type: 3}
     - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
         type: 3}
@@ -897,7 +897,7 @@ PrefabInstance:
         type: 3}
       propertyPath: allLabyrinthFragments.Array.data[1]
       value: 
-      objectReference: {fileID: 2539699523015181955, guid: 6f4b74aa339ab8b46ae303e60ec0969c,
+      objectReference: {fileID: 8198924686357067506, guid: 6d9f58dd72b32ff43a1a9d55f295cf7a,
         type: 3}
     - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
         type: 3}
@@ -908,34 +908,99 @@ PrefabInstance:
         type: 3}
       propertyPath: allLabyrinthFragments.Array.data[2]
       value: 
-      objectReference: {fileID: 2539699523015181955, guid: 4b6109fa8add5214d9a5ab8bda7fce24,
+      objectReference: {fileID: 4795108902600258953, guid: 92a9e006c9b6f2e4893ecedba1d56df6,
         type: 3}
     - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
         type: 3}
       propertyPath: allLabyrinthFragments.Array.data[3]
       value: 
-      objectReference: {fileID: 2539699523015181955, guid: 5ab4c2c83d3a7344e9e35e68c8912b07,
+      objectReference: {fileID: 2007482366270730514, guid: e8fca5c34f285754fbc3563a8a731d29,
         type: 3}
     - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
         type: 3}
       propertyPath: allLabyrinthFragments.Array.data[4]
       value: 
-      objectReference: {fileID: 307894632062166258, guid: 65641479a97547c40b3f9c9bcd529f12,
+      objectReference: {fileID: 3680761422302692995, guid: e46100b3008bf6c49aa4c6a855315056,
         type: 3}
     - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
         type: 3}
       propertyPath: finallFragmentThreshold
-      value: 100
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
         type: 3}
       propertyPath: maxMapWidth
-      value: 5
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
         type: 3}
       propertyPath: maxMapHegiht
-      value: 5
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
+        type: 3}
+      propertyPath: allLabyrinthFragments.Array.data[5]
+      value: 
+      objectReference: {fileID: 5348725726752361662, guid: db4a7ad7480c3c349b0a6c99c73b95df,
+        type: 3}
+    - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
+        type: 3}
+      propertyPath: allLabyrinthFragments.Array.data[6]
+      value: 
+      objectReference: {fileID: 8870745636660233190, guid: ecb89c2ff169d004e821327064ffafa5,
+        type: 3}
+    - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
+        type: 3}
+      propertyPath: allLabyrinthFragments.Array.data[7]
+      value: 
+      objectReference: {fileID: 2539699523015181955, guid: 5ab4c2c83d3a7344e9e35e68c8912b07,
+        type: 3}
+    - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
+        type: 3}
+      propertyPath: allLabyrinthFragments.Array.data[8]
+      value: 
+      objectReference: {fileID: 1562571621845223440, guid: 854a133645d79c34394f4250c9a5cab5,
+        type: 3}
+    - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
+        type: 3}
+      propertyPath: allLabyrinthFragments.Array.data[9]
+      value: 
+      objectReference: {fileID: 1853259160520063165, guid: acf1413c505cb46419158bb4caa63069,
+        type: 3}
+    - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
+        type: 3}
+      propertyPath: allLabyrinthFragments.Array.data[10]
+      value: 
+      objectReference: {fileID: 2590729313477592617, guid: 12fb824777867194fa747520110f1aa2,
+        type: 3}
+    - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
+        type: 3}
+      propertyPath: allLabyrinthFragments.Array.data[11]
+      value: 
+      objectReference: {fileID: 7409009118503226228, guid: e92a1a23d89378540bc7e1fbfad50e72,
+        type: 3}
+    - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
+        type: 3}
+      propertyPath: allLabyrinthFragments.Array.data[12]
+      value: 
+      objectReference: {fileID: 3932452186972865781, guid: d8ecb3cc427bb514cb057f6fcdef6585,
+        type: 3}
+    - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
+        type: 3}
+      propertyPath: allLabyrinthFragments.Array.data[13]
+      value: 
+      objectReference: {fileID: 6555899216598380302, guid: f76208410764ed545b8c59b106096dd7,
+        type: 3}
+    - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
+        type: 3}
+      propertyPath: allLabyrinthFragments.Array.data[14]
+      value: 
+      objectReference: {fileID: 307894632062166258, guid: 65641479a97547c40b3f9c9bcd529f12,
+        type: 3}
+    - target: {fileID: 4586705479666853520, guid: 0c68da8f6de223c46a95a2249c1a1cf5,
+        type: 3}
+      propertyPath: finallFragmentProb
+      value: 0.3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0c68da8f6de223c46a95a2249c1a1cf5, type: 3}

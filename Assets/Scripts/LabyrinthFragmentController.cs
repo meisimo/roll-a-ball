@@ -7,12 +7,16 @@ public class LabyrinthFragmentController : MonoBehaviour
 {
     static string ALL_DIRS = "NESW";
     public Transform northPoint;
-    public Transform southPoint;
     public Transform eastPoint;
+    public Transform southPoint;
     public Transform westPoint;
     public bool isFinall;
 
-    private List<Transform> outPoints;
+    public GameObject northDoor;
+    public GameObject eastDoor;
+    public GameObject southDoor;
+    public GameObject westDoor;
+
     private bool northOpen;
     private bool souhtOpen;
     private bool eastOpen;
@@ -32,48 +36,89 @@ public class LabyrinthFragmentController : MonoBehaviour
 
       return intersection;
     }
+
+    static public string RandomDirs(string forbDirs, int fixedSize = -1)
+    {
+      string dirs     = "";
+      string randDirs = "";
+      string tmpStr;
+
+      char dir;
+
+      int size = fixedSize < 0 ?
+                  UnityEngine.Random.Range(0, ALL_DIRS.Length - forbDirs.Length + 1):
+                  fixedSize;
+
+      foreach (char d in ALL_DIRS)
+      {
+        if ( ! forbDirs.Contains(d.ToString()) )
+        {
+          randDirs += d;
+        }
+      }
+
+
+      for (int i = 0; i < size; i++)
+      {
+        dir = randDirs[UnityEngine.Random.Range(0, randDirs.Length)];
+        dirs += dir;
+
+        tmpStr = "";
+        foreach(char d in randDirs)
+        {
+          if (dir != d)
+          {
+            tmpStr += d;
+          }
+        }
+        randDirs = tmpStr;
+      }
+
+      return dirs;
+    }
     
-    private void Awake()
+    public void Init()
     {
-        outPoints = new List<Transform>();
-        if (northPoint != null)
+      bool thereIsADoor;
+      foreach(char d in ALL_DIRS)
+        if (DirIsAvailable(d))
         {
-          outPoints.Add(northPoint);
-          northOpen = true;
+          thereIsADoor = ThereIsADoor(d);
+          SetDoorState(d, !thereIsADoor, thereIsADoor);
         }
-        if (southPoint != null)
-        {
-          outPoints.Add(southPoint);
-          souhtOpen = true;
-        }
-        if (eastPoint != null)
-        {
-          outPoints.Add(eastPoint);
-          eastOpen = true;
-        }
-        if (westPoint != null)
-        {
-          outPoints.Add(westPoint);
-          westOpen = true;
-        }
-        Debug.Log("AWAKE " + toString());
     }
 
-    public int CountOutPoints()
+    public void SetDoorState(char dir, bool open, bool thereIsADoor = true)
     {
-        return outPoints.Count;
-    }
-
-    public List<Vector3> GetOutPoints()
-    {
-        List<Vector3> outVecs = new List<Vector3>();
-
-        for(int i = 0; i < CountOutPoints(); i++)
-        {
-            outVecs.Add(outPoints[i].transform.position);
-        }
-
-        return outVecs;
+      switch (dir)
+      {
+        case 'N':
+          northPoint.gameObject.SetActive(open);
+          northOpen  = open;
+          if(thereIsADoor)
+            northDoor.SetActive(!open);
+          break;
+        case 'S':
+          southPoint.gameObject.SetActive(open);
+          souhtOpen  = open;
+          if(thereIsADoor)
+            southDoor.SetActive(!open);
+          break;
+        case 'E':
+          eastPoint.gameObject.SetActive(open);
+          eastOpen  = open;
+          if(thereIsADoor)
+            eastDoor.SetActive(!open);
+          break;
+        case 'W':
+          westPoint.gameObject.SetActive(open);
+          westOpen  = open;
+          if(thereIsADoor)
+            westDoor.SetActive(!open);
+          break;
+        default:
+          throw (new Exception("Direction no defined " + dir));
+      }
     }
 
     public bool IsFinall()
@@ -102,6 +147,22 @@ public class LabyrinthFragmentController : MonoBehaviour
           throw (new Exception("Direction no defined " + dir));
       }
       return isOpen;
+    }
+
+    public bool ThereIsADoor(char dir)
+    {
+      switch (dir)
+      {
+        case 'N':
+          return northDoor != null;
+        case 'S':
+          return southDoor != null;
+        case 'E':
+          return eastDoor != null;
+        case 'W':
+          return westDoor != null;
+      }
+      throw (new Exception("Direction no defined " + dir));
     }
 
     public bool DirIsAvailable(char dir)
@@ -136,21 +197,6 @@ public class LabyrinthFragmentController : MonoBehaviour
       throw (new Exception("Direction no defined " + dir));
     }
 
-    public string AllAvailableDirs()
-    {
-      string dirs = "";
-
-      foreach(char dir in ALL_DIRS)
-      {
-        if (DirIsAvailable(dir))
-        {
-          dirs = dirs + dir;
-        }
-      }
-
-      return dirs;
-    }
-
     public string AllDirs()
     {
       string dirs = "";
@@ -161,6 +207,36 @@ public class LabyrinthFragmentController : MonoBehaviour
         {
           dirs = dirs + dir;
         }
+      }
+
+      return dirs;
+    }
+
+    public GameObject Point(char dir)
+    {
+      switch (dir)
+      {
+        case 'N':
+          return northPoint ? northPoint.gameObject : null;
+        case 'S':
+          return southPoint ? southPoint.gameObject : null;
+        case 'E':
+          return eastPoint ? eastPoint.gameObject : null;
+        case 'W':
+          return westPoint ? westPoint.gameObject : null;
+      }
+      throw (new Exception("Direction no defined " + dir));
+    }
+
+    public string AvailableDirs()
+    {
+      string dirs = "";
+      GameObject p;
+
+      foreach(char dir in ALL_DIRS)
+      {
+        p = Point(dir);
+        dirs += ( p && p.activeSelf) ? dir.ToString() : "X";
       }
 
       return dirs;
@@ -193,9 +269,9 @@ public class LabyrinthFragmentController : MonoBehaviour
     public string toString()
     {
       return "Fragment: " 
-        + (northPoint == null ? "_" : "N")
-        + (eastPoint == null ?  "_" : "E")
-        + (southPoint == null ? "_" : "S")
-        + (westPoint == null ?  "_" : "W");
+        + (northPoint != null && northPoint.gameObject.activeSelf ? "N" : "_")
+        + (eastPoint != null  && eastPoint.gameObject.activeSelf  ? "E" : "_")
+        + (southPoint != null && southPoint.gameObject.activeSelf ? "S" : "_")
+        + (westPoint != null  && westPoint.gameObject.activeSelf  ? "W" : "_");
     }
 }

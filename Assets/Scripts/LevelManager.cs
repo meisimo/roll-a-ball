@@ -157,24 +157,28 @@ public class LevelManager : MonoBehaviour
     List<LabyrinthFragmentController> fragments,
     int fixedValue = -1)
   {
-    List<LabyrinthFragmentController> fragmentsMatch = new List<LabyrinthFragmentController>();
-    string allDirs;
+    LabyrinthFragmentController fragment = Instantiate(fragments[UnityEngine.Random.Range(0, fragments.Count)]);
+    fragment.Init();
 
-    foreach(LabyrinthFragmentController frag in fragments)
+    string dirsOpen = reqDirs + LabyrinthFragmentController.RandomDirs(reqDirs + forbDirs, fixedValue);
+
+    Debug.Log("==============================================");
+    Debug.Log("DIR OPEN " + dirsOpen); 
+    Debug.Log("DIR FORB " + forbDirs);
+    Debug.Log("REQ DIRS " + reqDirs);
+
+    foreach(char d in dirsOpen)
     {
-      allDirs = frag.AllAvailableDirs();
-
-      if ( 
-        LabyrinthFragmentController.DirsIntersection(reqDirs, allDirs) == reqDirs    &&
-        LabyrinthFragmentController.DirsIntersection(forbDirs, allDirs).Length == 0 && 
-        ( ( fixedValue < 0 ) || ( reqDirs.Length + fixedValue == allDirs.Length ) )
-      )
-      {
-        fragmentsMatch.Add(frag);
-      }
+      fragment.SetDoorState(d, true);
     }
 
-    return fragmentsMatch[UnityEngine.Random.Range(0, fragmentsMatch.Count)];
+    foreach (char d in forbDirs)
+    {
+      fragment.SetDoorState(d, false);
+    }
+
+    fragment.transform.SetParent(this.transform);
+    return fragment;
   }
 
   private LabyrinthFragmentController GenerateRandomFragment(
@@ -203,7 +207,10 @@ public class LevelManager : MonoBehaviour
       fragment = FindRandomFragment(requiredDirs, forbiddenDirs, sharedInstance.labFragments);
     }
 
-    return Instantiate(fragment);
+    if (fragment.AllDirs().Length == 0)
+      throw new Exception("ALL DIRECTION EMPTY");
+
+    return fragment;
   }
 
   private void PlaceNewFragment(LabyrinthFragmentController newFragment,
@@ -225,8 +232,8 @@ public class LevelManager : MonoBehaviour
     LabyrinthFragmentController mainFragment = Instantiate(
       sharedInstance.mainLabyrinthFargment);
 
+    mainFragment.Init();
     mainFragment.transform.SetParent(sharedInstance.transform, false);
-
     return mainFragment;
   }
 
@@ -292,6 +299,7 @@ public class LevelManager : MonoBehaviour
                                 int x)
   {
     Debug.Log("COMPLETE FRAGMENT " + fragment.toString() + " (" + x + ", " + y + ")");
+    print(map, y, x);
     foreach( (int y, int x, char dir) p in GetAvailablePoints(map, y, x))
     {
       if (fragment.DirIsOpen(p.dir))
@@ -328,5 +336,26 @@ public class LevelManager : MonoBehaviour
     sharedInstance.remainingOpenFragments--;
     InsertFragmentInMapMatrix(map, 0, 0, mainFragment);
     CompleteFragment(mainFragment, map, 0, 0);
+  }
+
+  private void print(LabyrinthFragmentController[,] map, int y, int x) {
+    LabyrinthFragmentController f;
+    int i, j;
+    string str = "MAP!\n";
+
+    for( i = sharedInstance.maxMapHegiht - 1; 0 <= i ; i--)
+    {
+      for ( j = 0; j < sharedInstance.maxMapWidth; j++)
+      {
+        f = map[i,j];
+        if ( i == sharedInstance.centerMapHeigh && j == sharedInstance.centerMapWidth)
+          str = str + " XXXX ";
+        else
+          str = str + (( f == null ) ? " XXXX " :  " " + f.AvailableDirs() +  " ");
+      }
+      str = str + "\n";
+    }
+
+    Debug.Log(str);
   }
 }
