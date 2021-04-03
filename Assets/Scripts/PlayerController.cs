@@ -7,19 +7,15 @@ public class PlayerController : MonoBehaviour
   private Rigidbody rg;
   public float speedFactor;
   public float frictionFactor;
-  public int timePerCollectableReward;
   public LevelManager levelManager;
   // TODO: Implement
   // public GameObject plane;
-  public Timer timer;
 
-  private int remainingCollectables;
   private bool movementAllowed;
 
   // Start is called before the first frame update
   void Start()
   {
-    remainingCollectables = 12;
     rg = GetComponent<Rigidbody>();
     movementAllowed = false;
   }
@@ -54,11 +50,7 @@ public class PlayerController : MonoBehaviour
   private void OnTriggerEnter(Collider other) {
     if (other.gameObject.CompareTag("Collectable"))
     {
-      other.gameObject.SetActive(false);
-      remainingCollectables--;
-
-      timer.IncreaseTimeOffset(-timePerCollectableReward);
-
+      levelManager.Collected(other.gameObject);
     } else if (other.gameObject.CompareTag("FinalPoint")) {
       finalReached();
     }

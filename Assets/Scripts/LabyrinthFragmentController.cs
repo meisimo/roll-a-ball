@@ -16,26 +16,12 @@ public class LabyrinthFragmentController : MonoBehaviour
     public GameObject eastDoor;
     public GameObject southDoor;
     public GameObject westDoor;
+    public GameObject collectables;
 
     private bool northOpen;
     private bool souhtOpen;
     private bool eastOpen;
     private bool westOpen;
-
-    static public string DirsIntersection(string dirs1, string dirs2)
-    {
-      string intersection = "";
-
-      foreach(char d1 in dirs1)
-      {
-        if(dirs2.Contains(d1.ToString()))
-        {
-          intersection += d1;
-        }
-      }
-
-      return intersection;
-    }
 
     static public string RandomDirs(
       string forbDirs,
@@ -93,6 +79,22 @@ public class LabyrinthFragmentController : MonoBehaviour
           thereIsADoor = ThereIsADoor(d);
           SetDoorState(d, !thereIsADoor, thereIsADoor);
         }
+
+      if (collectables)
+      {
+        collectables.SetActive(false);
+      }
+    }
+
+    public void ActivateCollectables()
+    {
+      if (collectables)
+        collectables.SetActive(true);
+    }
+
+    public int CountCollectables()
+    {
+      return collectables && collectables.activeSelf ? collectables.transform.childCount : 0;
     }
 
     public void SetDoorState(char dir, bool open, bool thereIsADoor = true)

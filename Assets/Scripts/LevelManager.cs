@@ -12,9 +12,8 @@ public class LevelManager : MonoBehaviour
   public List<LabyrinthFragmentController> allLabyrinthFragments;
   public LabyrinthFragmentController mainLabyrinthFargment;
   public string nextLevelName;
-  public float finallFragmentProb;
-  public int finallFragmentThreshold;
-  public int finallFragmentThresholdWidth;
+  public float collectableProb;
+  public int timePerCollectableReward;
   public int maxMapWidth;
   public int maxMapHegiht;
   public int hFinallLowerBound;
@@ -22,6 +21,8 @@ public class LevelManager : MonoBehaviour
   public int vFinallLowerBound;
   public int vFinallUpperBound;
   public bool isTheFinalLevel;
+  public Timer timer;
+  public Collectables collectables;
 
   private List<LabyrinthFragmentController> labFragments;
   private List<LabyrinthFragmentController> finalLabFragments;
@@ -30,6 +31,7 @@ public class LevelManager : MonoBehaviour
   private int centerMapWidth;
   private int fragmentsPlaced;
   private int remainingOpenFragments;
+  private int allCollectables;
 
   private void Awake()
   {
@@ -49,6 +51,7 @@ public class LevelManager : MonoBehaviour
       ClassifyFragmentsByOuts();
       InitializeLabyrinth();
     }
+    timer.Init();
   }
 
   private void ClassifyFragmentsByOuts()
@@ -59,11 +62,6 @@ public class LevelManager : MonoBehaviour
       if (fragment.IsFinall())  finalLabFragments.Add(fragment);
       else                      labFragments.Add(fragment);
     }
-  }
-
-  private bool PlaceFinallFragment(int y, int x)
-  {
-    return UnityEngine.Random.Range(0.0f, 1.0f) < sharedInstance.finallFragmentProb;
   }
 
   private List<(int y, int x, char dir)> FindNeighboors(int y, int x)
@@ -186,7 +184,7 @@ public class LevelManager : MonoBehaviour
 
     if ( minP < 0.1 )
       minOpenDoor = 3;
-    else if ( minP < 0.3 )
+    else if ( minP < 0.2 )
       minOpenDoor = 2;
     else 
       minOpenDoor = 1;
@@ -207,6 +205,11 @@ public class LevelManager : MonoBehaviour
     int minOpenDoors     = CalculateMinOpenDoors(y, x);
 
     LabyrinthFragmentController fragment =  FindRandomFragment(requiredDirs, forbiddenDirs, sharedInstance.labFragments, minOpenDoors);
+
+    if ( UnityEngine.Random.Range(0.0f, 1.0f) < sharedInstance.collectableProb)
+    {
+      fragment.ActivateCollectables();
+    }
 
     if (fragment.AllDirs().Length == 0)
       throw new Exception("ALL DIRECTION EMPTY");
@@ -329,13 +332,19 @@ public class LevelManager : MonoBehaviour
 
   private void PlaceFinalFragment(LabyrinthFragmentController[,] map)
   {
-    int x = UnityEngine.Random.Range(sharedInstance.hFinallLowerBound, sharedInstance.hFinallUpperBound + 1);
-    int y = UnityEngine.Random.Range(sharedInstance.vFinallLowerBound, sharedInstance.vFinallUpperBound + 1);
+    LabyrinthFragmentController fragmentToRemove = null;
+    int x = 0, y = 0;
 
-    x *= UnityEngine.Random.Range(0, 2) == 1 ? 1 : -1;
-    y *= UnityEngine.Random.Range(0, 2) == 1 ? 1 : -1;
+    while(!fragmentToRemove)
+    {
+      x = UnityEngine.Random.Range(sharedInstance.hFinallLowerBound, sharedInstance.hFinallUpperBound + 1);
+      y = UnityEngine.Random.Range(sharedInstance.vFinallLowerBound, sharedInstance.vFinallUpperBound + 1);
 
-    LabyrinthFragmentController fragmentToRemove = GetFragmentInMapMatrix(map, y, x);
+      x *= UnityEngine.Random.Range(0, 2) == 1 ? 1 : -1;
+      y *= UnityEngine.Random.Range(0, 2) == 1 ? 1 : -1;
+
+      fragmentToRemove = GetFragmentInMapMatrix(map, y, x);
+    }
 
     Vector3 position     = fragmentToRemove.transform.position;
     string availableDirs = fragmentToRemove.AvailableDirs();
@@ -366,6 +375,29 @@ public class LevelManager : MonoBehaviour
     InsertFragmentInMapMatrix(map, 0, 0, mainFragment);
     CompleteFragment(mainFragment, map, 0, 0);
     PlaceFinalFragment(map);
+
+    collectables.SetTotalCollectables(CountCollectables(map));
+  }
+
+  private int CountCollectables(LabyrinthFragmentController[,] map)
+  {
+    int count = 0;
+
+    LabyrinthFragmentController f;
+    for(int i = 0; i < sharedInstance.maxMapHegiht; i++)
+      for(int j = 0; j < sharedInstance.maxMapWidth; j++)
+      {
+        f = map[i, j];
+        if (f)
+        {
+          count += f.CountCollectables();
+        }
+      }
+
+    Debug.Log("COUNT");
+    Debug.Log(count);
+    
+    return count;
   }
 
   private void print(LabyrinthFragmentController[,] map, int y, int x)
@@ -419,6 +451,13 @@ public class LevelManager : MonoBehaviour
   public void RemoveRamps()
   {
     ramps.SetActive(false);
+  }
+
+  public void Collected(GameObject collectable)
+  {
+    collectable.SetActive(false);
+    timer.IncreaseTimeOffset(-timePerCollectableReward);
+    collectables.IncrementCollected();
   }
 
 }
