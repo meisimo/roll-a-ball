@@ -2,18 +2,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LevelManager : MonoBehaviour
 {
   static LevelManager sharedInstance;
 
+  public GameObject ramps;
   public List<LabyrinthFragmentController> allLabyrinthFragments;
   public LabyrinthFragmentController mainLabyrinthFargment;
+  public string nextLevelName;
   public float finallFragmentProb;
   public int finallFragmentThreshold;
   public int finallFragmentThresholdWidth;
   public int maxMapWidth;
   public int maxMapHegiht;
+  public int hFinallLowerBound;
+  public int hFinallUpperBound;
+  public int vFinallLowerBound;
+  public int vFinallUpperBound;
+  public bool isTheFinalLevel;
 
   private List<LabyrinthFragmentController> labFragments;
   private List<LabyrinthFragmentController> finalLabFragments;
@@ -53,19 +61,9 @@ public class LevelManager : MonoBehaviour
     }
   }
 
-  private bool PlaceFinallFragment(int placedFragments)
+  private bool PlaceFinallFragment(int y, int x)
   {
-    if (placedFragments < sharedInstance.finallFragmentThreshold )
-      return false;
-    if (sharedInstance.finallFragmentThreshold + sharedInstance.finallFragmentThresholdWidth <= placedFragments)
-      return true;
     return UnityEngine.Random.Range(0.0f, 1.0f) < sharedInstance.finallFragmentProb;
-  }
-
-  private bool ForceClose(int remainingOpenFragments)
-  {
-    // TODO: 
-    return false;
   }
 
   private List<(int y, int x, char dir)> FindNeighboors(int y, int x)
@@ -165,11 +163,6 @@ public class LevelManager : MonoBehaviour
 
     string dirsOpen = reqDirs + LabyrinthFragmentController.RandomDirs(reqDirs + forbDirs, -1, minOpenDoors);
 
-    Debug.Log("==============================================");
-    Debug.Log("DIR OPEN " + dirsOpen); 
-    Debug.Log("DIR FORB " + forbDirs);
-    Debug.Log("REQ DIRS " + reqDirs);
-
     foreach(char d in dirsOpen)
     {
       fragment.SetDoorState(d, true);
@@ -184,9 +177,21 @@ public class LevelManager : MonoBehaviour
     return fragment;
   }
 
-  private int CalculateMinOpenDoors()
+  private int CalculateMinOpenDoors(int y, int x)
   {
-    return 1;
+    float xP   = ((float)x) / sharedInstance.centerMapWidth;
+    float yP   = ((float)y)/ sharedInstance.centerMapHeigh;
+    float minP = Mathf.Min(xP, yP);
+    int minOpenDoor;
+
+    if ( minP < 0.1 )
+      minOpenDoor = 3;
+    else if ( minP < 0.3 )
+      minOpenDoor = 2;
+    else 
+      minOpenDoor = 1;
+
+    return minOpenDoor;
   }
 
   private LabyrinthFragmentController GenerateRandomFragment(
@@ -199,17 +204,9 @@ public class LevelManager : MonoBehaviour
   {
     string requiredDirs  = FindRequiredDirections(map, y, x);
     string forbiddenDirs = FindForbiddenDirections(map, y, x);
-    int minOpenDoors     = CalculateMinOpenDoors();
+    int minOpenDoors     = CalculateMinOpenDoors(y, x);
 
-    LabyrinthFragmentController fragment;
-    if (!finalFragmentPlaced && PlaceFinallFragment(placedFragments))
-    {
-      fragment = FindRandomFragment(requiredDirs, forbiddenDirs, sharedInstance.finalLabFragments, minOpenDoors);
-    }
-    else
-    {
-      fragment = FindRandomFragment(requiredDirs, forbiddenDirs, sharedInstance.labFragments, minOpenDoors);
-    }
+    LabyrinthFragmentController fragment =  FindRandomFragment(requiredDirs, forbiddenDirs, sharedInstance.labFragments, minOpenDoors);
 
     if (fragment.AllDirs().Length == 0)
       throw new Exception("ALL DIRECTION EMPTY");
@@ -302,8 +299,6 @@ public class LevelManager : MonoBehaviour
                                 int y,
                                 int x)
   {
-    Debug.Log("COMPLETE FRAGMENT " + fragment.toString() + " (" + x + ", " + y + ")");
-    print(map, y, x);
     foreach( (int y, int x, char dir) p in GetAvailablePoints(map, y, x))
     {
       if (fragment.DirIsOpen(p.dir))
@@ -332,6 +327,36 @@ public class LevelManager : MonoBehaviour
     }
   }
 
+  private void PlaceFinalFragment(LabyrinthFragmentController[,] map)
+  {
+    int x = UnityEngine.Random.Range(sharedInstance.hFinallLowerBound, sharedInstance.hFinallUpperBound + 1);
+    int y = UnityEngine.Random.Range(sharedInstance.vFinallLowerBound, sharedInstance.vFinallUpperBound + 1);
+
+    x *= UnityEngine.Random.Range(0, 2) == 1 ? 1 : -1;
+    y *= UnityEngine.Random.Range(0, 2) == 1 ? 1 : -1;
+
+    LabyrinthFragmentController fragmentToRemove = GetFragmentInMapMatrix(map, y, x);
+
+    Vector3 position     = fragmentToRemove.transform.position;
+    string availableDirs = fragmentToRemove.AvailableDirs();
+    string forbDirs      = "";
+
+    Destroy(fragmentToRemove.gameObject);
+
+    foreach(char d in LabyrinthFragmentController.ALL_DIRS)
+    {
+      if(!availableDirs.Contains(d.ToString()))
+      {
+        forbDirs += d;
+      }
+    }
+
+    LabyrinthFragmentController finalFragment = FindRandomFragment(availableDirs, forbDirs, sharedInstance.finalLabFragments, 0);
+    finalFragment.transform.position = fragmentToRemove.transform.position;
+
+    InsertFragmentInMapMatrix(map, y, x, finalFragment);
+  }
+
   private void InitializeLabyrinth()
   {
     LabyrinthFragmentController mainFragment = FirstFragment();
@@ -340,9 +365,11 @@ public class LevelManager : MonoBehaviour
     sharedInstance.remainingOpenFragments--;
     InsertFragmentInMapMatrix(map, 0, 0, mainFragment);
     CompleteFragment(mainFragment, map, 0, 0);
+    PlaceFinalFragment(map);
   }
 
-  private void print(LabyrinthFragmentController[,] map, int y, int x) {
+  private void print(LabyrinthFragmentController[,] map, int y, int x)
+  {
     LabyrinthFragmentController f;
     int i, j;
     string str = "MAP!\n";
@@ -362,4 +389,36 @@ public class LevelManager : MonoBehaviour
 
     Debug.Log(str);
   }
+
+  private void ChangeToNextLevel()
+  {
+    SceneManager.LoadScene(nextLevelName);
+  }
+
+  private void FinalOfTheGame()
+  {
+    Debug.Log("FINAL!!");
+  }
+
+  public void FinalReached()
+  {
+    if(isTheFinalLevel)
+    {
+      FinalOfTheGame();
+    }
+    else {
+      ChangeToNextLevel();
+    }
+  }
+
+  public bool HasRamps()
+  {
+    return ramps != null;
+  }
+
+  public void RemoveRamps()
+  {
+    ramps.SetActive(false);
+  }
+
 }

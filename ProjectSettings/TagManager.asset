@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Collectable
   - OutPoint
+  - FinalReached
+  - FinalPoint
+  - Gound
   layers:
   - Default
   - TransparentFX

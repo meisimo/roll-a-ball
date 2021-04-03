@@ -83,7 +83,7 @@ GameObject:
   - component: {fileID: 3099927419526588965}
   m_Layer: 0
   m_Name: Ground
-  m_TagString: Untagged
+  m_TagString: Gound
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -208,10 +208,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   northPoint: {fileID: 5776194471232693589}
-  southPoint: {fileID: 0}
   eastPoint: {fileID: 0}
+  southPoint: {fileID: 0}
   westPoint: {fileID: 0}
   isFinall: 0
+  northDoor: {fileID: 0}
+  eastDoor: {fileID: 0}
+  southDoor: {fileID: 0}
+  westDoor: {fileID: 0}
 --- !u!1001 &114778395426077341
 PrefabInstance:
   m_ObjectHideFlags: 0

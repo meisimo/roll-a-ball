@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class LabyrinthFragmentController : MonoBehaviour
 {
-    static string ALL_DIRS = "NESW";
+    static public string ALL_DIRS = "NESW";
     public Transform northPoint;
     public Transform eastPoint;
     public Transform southPoint;
@@ -243,7 +243,8 @@ public class LabyrinthFragmentController : MonoBehaviour
       foreach(char dir in ALL_DIRS)
       {
         p = Point(dir);
-        dirs += ( p && p.activeSelf) ? dir.ToString() : "X";
+        if ( p && p.activeSelf)
+          dirs += dir;
       }
 
       return dirs;
