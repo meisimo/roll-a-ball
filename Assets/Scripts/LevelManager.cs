@@ -11,6 +11,7 @@ public class LevelManager : MonoBehaviour
   public LabyrinthFragmentController mainLabyrinthFargment;
   public float finallFragmentProb;
   public int finallFragmentThreshold;
+  public int finallFragmentThresholdWidth;
   public int maxMapWidth;
   public int maxMapHegiht;
 
@@ -52,11 +53,13 @@ public class LevelManager : MonoBehaviour
     }
   }
 
-  private bool PlaceFinallFragment(int placedFragments, bool forceClose)
+  private bool PlaceFinallFragment(int placedFragments)
   {
-    if (placedFragments < sharedInstance.finallFragmentThreshold)
+    if (placedFragments < sharedInstance.finallFragmentThreshold )
       return false;
-    return forceClose || UnityEngine.Random.Range(0.0f, 1.0f) < sharedInstance.finallFragmentProb;
+    if (sharedInstance.finallFragmentThreshold + sharedInstance.finallFragmentThresholdWidth <= placedFragments)
+      return true;
+    return UnityEngine.Random.Range(0.0f, 1.0f) < sharedInstance.finallFragmentProb;
   }
 
   private bool ForceClose(int remainingOpenFragments)
@@ -155,12 +158,12 @@ public class LevelManager : MonoBehaviour
     string reqDirs,
     string forbDirs,
     List<LabyrinthFragmentController> fragments,
-    int fixedValue = -1)
+    int minOpenDoors = -1)
   {
     LabyrinthFragmentController fragment = Instantiate(fragments[UnityEngine.Random.Range(0, fragments.Count)]);
     fragment.Init();
 
-    string dirsOpen = reqDirs + LabyrinthFragmentController.RandomDirs(reqDirs + forbDirs, fixedValue);
+    string dirsOpen = reqDirs + LabyrinthFragmentController.RandomDirs(reqDirs + forbDirs, -1, minOpenDoors);
 
     Debug.Log("==============================================");
     Debug.Log("DIR OPEN " + dirsOpen); 
@@ -181,6 +184,11 @@ public class LevelManager : MonoBehaviour
     return fragment;
   }
 
+  private int CalculateMinOpenDoors()
+  {
+    return 1;
+  }
+
   private LabyrinthFragmentController GenerateRandomFragment(
     LabyrinthFragmentController[,] map,
     int y,
@@ -189,22 +197,18 @@ public class LevelManager : MonoBehaviour
     int remainingOpenFragments,
     bool finalFragmentPlaced)
   {
-    bool forceClose      = ForceClose(remainingOpenFragments);
     string requiredDirs  = FindRequiredDirections(map, y, x);
     string forbiddenDirs = FindForbiddenDirections(map, y, x);
+    int minOpenDoors     = CalculateMinOpenDoors();
 
     LabyrinthFragmentController fragment;
-    if (!finalFragmentPlaced && PlaceFinallFragment(placedFragments, forceClose))
+    if (!finalFragmentPlaced && PlaceFinallFragment(placedFragments))
     {
-      fragment = FindRandomFragment(requiredDirs, forbiddenDirs, sharedInstance.finalLabFragments);
-    }
-    else if (forceClose)
-    {
-      fragment = FindRandomFragment(requiredDirs, forbiddenDirs, sharedInstance.labFragments, 0);
+      fragment = FindRandomFragment(requiredDirs, forbiddenDirs, sharedInstance.finalLabFragments, minOpenDoors);
     }
     else
     {
-      fragment = FindRandomFragment(requiredDirs, forbiddenDirs, sharedInstance.labFragments);
+      fragment = FindRandomFragment(requiredDirs, forbiddenDirs, sharedInstance.labFragments, minOpenDoors);
     }
 
     if (fragment.AllDirs().Length == 0)

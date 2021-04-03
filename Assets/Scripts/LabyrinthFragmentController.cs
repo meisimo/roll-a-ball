@@ -37,7 +37,11 @@ public class LabyrinthFragmentController : MonoBehaviour
       return intersection;
     }
 
-    static public string RandomDirs(string forbDirs, int fixedSize = -1)
+    static public string RandomDirs(
+      string forbDirs,
+      int suggestedMaxSize = -1 ,
+      int suggestedMinSize = -1
+    )
     {
       string dirs     = "";
       string randDirs = "";
@@ -45,9 +49,12 @@ public class LabyrinthFragmentController : MonoBehaviour
 
       char dir;
 
-      int size = fixedSize < 0 ?
-                  UnityEngine.Random.Range(0, ALL_DIRS.Length - forbDirs.Length + 1):
-                  fixedSize;
+      int defMaxSize = ALL_DIRS.Length - forbDirs.Length;
+      int maxSize    = suggestedMaxSize < 0 ? defMaxSize : Mathf.Min(defMaxSize, suggestedMaxSize);
+      int minSize    = suggestedMinSize < 0 ? 0          : Mathf.Min(defMaxSize, suggestedMinSize);
+
+      int size = UnityEngine.Random.Range( minSize, maxSize + 1);
+                  
 
       foreach (char d in ALL_DIRS)
       {
