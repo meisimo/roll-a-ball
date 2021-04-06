@@ -10,10 +10,6 @@ public class Collectables : MonoBehaviour
     private int totalCollectables;
     private int collected;
 
-    private void Awake() {
-        Init();
-    }
-
     public void SetTotalCollectables(int total)
     {
         totalCollectables = total;

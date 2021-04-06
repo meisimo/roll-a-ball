@@ -23,7 +23,10 @@ public class LevelManager : MonoBehaviour
   public bool isTheFinalLevel;
   public Timer timer;
   public Collectables collectables;
+  public AudioClip collectableSound;
+  public AudioClip leavingRampsSound;
 
+  private AudioSource audioSource;
   private List<LabyrinthFragmentController> labFragments;
   private List<LabyrinthFragmentController> finalLabFragments;
   private bool lastFragmentPlaced;
@@ -50,6 +53,7 @@ public class LevelManager : MonoBehaviour
 
       ClassifyFragmentsByOuts();
       InitializeLabyrinth();
+      audioSource = GetComponent<AudioSource>();
     }
     timer.Init();
   }
@@ -145,8 +149,16 @@ public class LevelManager : MonoBehaviour
 
   private LabyrinthFragmentController GetFragmentInMapMatrix(LabyrinthFragmentController[,] map,
                                       int y,
-                                      int x)
+                                      int x,
+                                      bool debug = false)
   {
+    if (debug)
+    {
+      Debug.Log("DEBUG");
+      Debug.Log( y + ", " + x);
+      Debug.Log( (sharedInstance.centerMapHeigh + y) + ", " + sharedInstance.centerMapWidth + x);
+      return null;
+    }
     return map[sharedInstance.centerMapHeigh + y, sharedInstance.centerMapWidth + x];
   }
 
@@ -177,17 +189,15 @@ public class LevelManager : MonoBehaviour
 
   private int CalculateMinOpenDoors(int y, int x)
   {
-    float xP   = ((float)x) / sharedInstance.centerMapWidth;
+    float xP   = ((float)x)/ sharedInstance.centerMapWidth;
     float yP   = ((float)y)/ sharedInstance.centerMapHeigh;
     float minP = Mathf.Min(xP, yP);
     int minOpenDoor;
 
-    if ( minP < 0.1 )
-      minOpenDoor = 3;
-    else if ( minP < 0.2 )
-      minOpenDoor = 2;
-    else 
+    if ( minP < 0.6)
       minOpenDoor = 1;
+    else  
+      minOpenDoor = 0;
 
     return minOpenDoor;
   }
@@ -297,11 +307,14 @@ public class LevelManager : MonoBehaviour
     return closedPoints;
   }
 
+  private int X;
   private void CompleteFragment(LabyrinthFragmentController fragment,
                                 LabyrinthFragmentController[,] map,
                                 int y,
                                 int x)
   {
+    Debug.Log("COMPLETE FRAGMENT " + fragment.ToString() + " IN (" + x + ", " + y + ")");
+
     foreach( (int y, int x, char dir) p in GetAvailablePoints(map, y, x))
     {
       if (fragment.DirIsOpen(p.dir))
@@ -366,6 +379,59 @@ public class LevelManager : MonoBehaviour
     InsertFragmentInMapMatrix(map, y, x, finalFragment);
   }
 
+  private (LabyrinthFragmentController, (int, int, char)) FindBorderFragment(LabyrinthFragmentController[,] map)
+  {
+    LabyrinthFragmentController borderFragment = null, fragment;
+    (int y, int x, char dir) borderPoint       = (0, 0, 'X');
+    (int y, int x, char dir) emptyPoint        = (0, 0, 'X');
+    int i, j;
+
+
+    for ( i = -sharedInstance.centerMapHeigh + 1; i < sharedInstance.centerMapHeigh; i++)
+      for ( j = -sharedInstance.centerMapWidth + 1; j < sharedInstance.centerMapWidth; j++)
+      {
+        if ( borderFragment == null && GetFragmentInMapMatrix(map, i, j) == null )
+        {
+          foreach((int y, int x, char dir) p in FindNeighboors(i, j))
+          {
+            fragment = GetFragmentInMapMatrix(map, p.y, p.x);
+            if(
+              fragment && 
+              fragment.ThereIsADoor(OpositeDir(p.dir))
+            )
+            {
+              borderFragment = fragment;
+              borderPoint    = p;
+              emptyPoint     = (i, j, p.dir);
+              break;
+            }
+          }
+        } 
+      }
+    
+    return (borderFragment, borderPoint);
+  }
+
+  private void FillLabyrinth(LabyrinthFragmentController[,] map)
+  {
+    int flag = 5;
+    LabyrinthFragmentController borderFragment;
+    (int y, int x, char dir) borderPoint;
+
+    (borderFragment, borderPoint) = FindBorderFragment(map);
+
+    while( borderFragment != null)
+    {
+      Debug.Log(flag + " COUNT BORDER POINT AT " + borderPoint.ToString());
+
+      sharedInstance.remainingOpenFragments++;
+      borderFragment.SetDoorState(OpositeDir(borderPoint.dir), true);
+
+      CompleteFragment(borderFragment, map, borderPoint.y, borderPoint.x);
+      (borderFragment, borderPoint) = FindBorderFragment(map);
+    }
+  }
+
   private void InitializeLabyrinth()
   {
     LabyrinthFragmentController mainFragment = FirstFragment();
@@ -374,8 +440,10 @@ public class LevelManager : MonoBehaviour
     sharedInstance.remainingOpenFragments--;
     InsertFragmentInMapMatrix(map, 0, 0, mainFragment);
     CompleteFragment(mainFragment, map, 0, 0);
+    FillLabyrinth(map);
     PlaceFinalFragment(map);
 
+    collectables.Init();
     collectables.SetTotalCollectables(CountCollectables(map));
   }
 
@@ -393,14 +461,11 @@ public class LevelManager : MonoBehaviour
           count += f.CountCollectables();
         }
       }
-
-    Debug.Log("COUNT");
-    Debug.Log(count);
     
     return count;
   }
 
-  private void print(LabyrinthFragmentController[,] map, int y, int x)
+  private void print(LabyrinthFragmentController[,] map)
   {
     LabyrinthFragmentController f;
     int i, j;
@@ -451,13 +516,15 @@ public class LevelManager : MonoBehaviour
   public void RemoveRamps()
   {
     ramps.SetActive(false);
+    audioSource.PlayOneShot(leavingRampsSound, 1f);
   }
 
   public void Collected(GameObject collectable)
   {
-    collectable.SetActive(false);
     timer.IncreaseTimeOffset(-timePerCollectableReward);
     collectables.IncrementCollected();
+    collectable.SetActive(false);
+    audioSource.PlayOneShot(collectableSound, 1f);
   }
 
 }

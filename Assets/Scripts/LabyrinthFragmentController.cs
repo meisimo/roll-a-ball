@@ -276,7 +276,7 @@ public class LabyrinthFragmentController : MonoBehaviour
       }
     }
 
-    public string toString()
+    public string ToString()
     {
       return "Fragment: " 
         + (northPoint != null && northPoint.gameObject.activeSelf ? "N" : "_")
