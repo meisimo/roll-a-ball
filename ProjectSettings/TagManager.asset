@@ -9,6 +9,7 @@ TagManager:
   - FinalReached
   - FinalPoint
   - Gound
+  - SpeedUpCollectable
   layers:
   - Default
   - TransparentFX

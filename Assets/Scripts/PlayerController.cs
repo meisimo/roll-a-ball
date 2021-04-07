@@ -5,7 +5,9 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
   private Rigidbody rg;
+  public float speedStep;
   public float speedFactor;
+  public float maxSpeedFactor;
   public float frictionFactor;
   public LevelManager levelManager;
   // TODO: Implement
@@ -50,8 +52,15 @@ public class PlayerController : MonoBehaviour
   private void OnTriggerEnter(Collider other) {
     if (other.gameObject.CompareTag("Collectable"))
     {
+      levelManager.TimeCollected(other.gameObject);
       levelManager.Collected(other.gameObject);
-    } else if (other.gameObject.CompareTag("FinalPoint")) {
+    }
+    else if(other.gameObject.CompareTag("SpeedUpCollectable"))
+    {
+      speedFactor = Mathf.Min(maxSpeedFactor, speedFactor + speedStep);
+      levelManager.Collected(other.gameObject);
+    }
+    else if (other.gameObject.CompareTag("FinalPoint")) {
       finalReached();
     }
   }

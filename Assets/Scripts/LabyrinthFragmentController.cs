@@ -18,6 +18,7 @@ public class LabyrinthFragmentController : MonoBehaviour
     public GameObject southDoor;
     public GameObject westDoor;
     public GameObject collectables;
+    public GameObject speedCollectables;
 
     private bool northOpen;
     private bool souhtOpen;
@@ -85,17 +86,36 @@ public class LabyrinthFragmentController : MonoBehaviour
       {
         collectables.SetActive(false);
       }
+      if (speedCollectables)
+      {
+        speedCollectables.SetActive(false);
+      }
     }
 
     public void ActivateCollectables()
     {
-      if (collectables)
-        collectables.SetActive(true);
+      ActivateCollectablesGen(collectables);
+    }
+
+    public void ActivateSpeedCollectables()
+    {
+      ActivateCollectablesGen(speedCollectables);
+    }
+
+    private void ActivateCollectablesGen(GameObject coll)
+    {
+      if (coll)
+        coll.SetActive(true);
     }
 
     public int CountCollectables()
     {
-      return collectables && collectables.activeSelf ? collectables.transform.childCount : 0;
+      return CountCollectablesGen(collectables) + CountCollectablesGen(speedCollectables);
+    }
+
+    private int CountCollectablesGen(GameObject coll)
+    {
+      return coll && coll.activeSelf ? coll.transform.childCount : 0;
     }
 
     public void SetDoorState(char dir, bool open, bool thereIsADoor = true)

@@ -13,6 +13,7 @@ public class LevelManager : MonoBehaviour
   public LabyrinthFragmentController mainLabyrinthFargment;
   public string nextLevelName;
   public float collectableProb;
+  public float speedCollectableProb;
   public int timePerCollectableReward;
   public int maxMapWidth;
   public int maxMapHegiht;
@@ -21,6 +22,7 @@ public class LevelManager : MonoBehaviour
   public int vFinallLowerBound;
   public int vFinallUpperBound;
   public int nTraps;
+  public int aditionalCollectables;
   public bool isTheFinalLevel;
   public Timer timer;
   public Collectables collectables;
@@ -225,6 +227,11 @@ public class LevelManager : MonoBehaviour
     {
       fragment.ActivateCollectables();
     }
+    if ( UnityEngine.Random.Range(0.0f, 1.0f) < sharedInstance.speedCollectableProb)
+    {
+      fragment.ActivateSpeedCollectables();
+    }
+
 
     if (fragment.AllDirs().Length == 0)
       throw new Exception("ALL DIRECTION EMPTY");
@@ -470,7 +477,7 @@ public class LevelManager : MonoBehaviour
     }
 
     collectables.Init();
-    collectables.SetTotalCollectables(CountCollectables(map));
+    collectables.SetTotalCollectables(CountCollectables(map) + sharedInstance.aditionalCollectables);
   }
 
   private int CountCollectables(LabyrinthFragmentController[,] map)
@@ -547,10 +554,14 @@ public class LevelManager : MonoBehaviour
 
   public void Collected(GameObject collectable)
   {
-    timer.IncreaseTimeOffset(-timePerCollectableReward);
     collectables.IncrementCollected();
     collectable.SetActive(false);
     audioSource.PlayOneShot(collectableSound, 1f);
+  }
+
+  public void TimeCollected(GameObject collectable)
+  {
+    timer.IncreaseTimeOffset(-timePerCollectableReward);
   }
 
 }
