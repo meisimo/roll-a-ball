@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class TrapController : MonoBehaviour
 {
-    public List<Transform> hints;
     public AudioClip itsATrapSound;
     private AudioSource audioSource;
 
