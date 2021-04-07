@@ -11,6 +11,7 @@ public class LabyrinthFragmentController : MonoBehaviour
     public Transform southPoint;
     public Transform westPoint;
     public bool isFinall;
+    public bool isATrap;
 
     public GameObject northDoor;
     public GameObject eastDoor;
@@ -133,6 +134,11 @@ public class LabyrinthFragmentController : MonoBehaviour
     public bool IsFinall()
     {
         return isFinall;
+    }
+
+    public bool IsATrap()
+    {
+      return isATrap;
     }
 
     public bool DirIsOpen(char dir)

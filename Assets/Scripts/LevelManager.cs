@@ -20,6 +20,7 @@ public class LevelManager : MonoBehaviour
   public int hFinallUpperBound;
   public int vFinallLowerBound;
   public int vFinallUpperBound;
+  public int nTraps;
   public bool isTheFinalLevel;
   public Timer timer;
   public Collectables collectables;
@@ -29,6 +30,7 @@ public class LevelManager : MonoBehaviour
   private AudioSource audioSource;
   private List<LabyrinthFragmentController> labFragments;
   private List<LabyrinthFragmentController> finalLabFragments;
+  private List<LabyrinthFragmentController> trapFragments;
   private bool lastFragmentPlaced;
   private int centerMapHeigh;
   private int centerMapWidth;
@@ -46,6 +48,7 @@ public class LevelManager : MonoBehaviour
       remainingOpenFragments = maxMapHegiht * maxMapWidth - 1;
 
       finalLabFragments = new List<LabyrinthFragmentController>();
+      trapFragments     = new List<LabyrinthFragmentController>();
       labFragments      = new List<LabyrinthFragmentController>();
 
       centerMapHeigh    = maxMapHegiht >> 1;
@@ -63,8 +66,10 @@ public class LevelManager : MonoBehaviour
     for(int i = 0; i < sharedInstance.allLabyrinthFragments.Count; i++)
     {
       LabyrinthFragmentController fragment = sharedInstance.allLabyrinthFragments[i];
-      if (fragment.IsFinall())  finalLabFragments.Add(fragment);
-      else                      labFragments.Add(fragment);
+
+      if      (fragment.IsFinall()) finalLabFragments.Add(fragment);
+      else if (fragment.IsATrap())  trapFragments.Add(fragment);
+      else                          labFragments.Add(fragment);
     }
   }
 
@@ -343,13 +348,22 @@ public class LevelManager : MonoBehaviour
     }
   }
 
-  private void PlaceFinalFragment(LabyrinthFragmentController[,] map)
+  private void PlaceExtraFragment(
+    LabyrinthFragmentController[,] map,
+    List<LabyrinthFragmentController> fragments
+  )
   {
     LabyrinthFragmentController fragmentToRemove = null;
     int x = 0, y = 0;
+    int remainingTrial = sharedInstance.hFinallUpperBound * sharedInstance.vFinallUpperBound;
 
     while(!fragmentToRemove)
     {
+      if (remainingTrial < 0)
+      {
+        throw new Exception("TOO MANY TRIES TO PLACE EXTRA FRAGMENT");
+      }
+
       x = UnityEngine.Random.Range(sharedInstance.hFinallLowerBound, sharedInstance.hFinallUpperBound + 1);
       y = UnityEngine.Random.Range(sharedInstance.vFinallLowerBound, sharedInstance.vFinallUpperBound + 1);
 
@@ -357,6 +371,13 @@ public class LevelManager : MonoBehaviour
       y *= UnityEngine.Random.Range(0, 2) == 1 ? 1 : -1;
 
       fragmentToRemove = GetFragmentInMapMatrix(map, y, x);
+      if (
+        fragmentToRemove &&
+        (fragmentToRemove.IsATrap() || fragmentToRemove.IsFinall())
+      )
+      {
+        fragmentToRemove = null;
+      }
     }
 
     Vector3 position     = fragmentToRemove.transform.position;
@@ -373,7 +394,7 @@ public class LevelManager : MonoBehaviour
       }
     }
 
-    LabyrinthFragmentController finalFragment = FindRandomFragment(availableDirs, forbDirs, sharedInstance.finalLabFragments, 0);
+    LabyrinthFragmentController finalFragment = FindRandomFragment(availableDirs, forbDirs, fragments, 0);
     finalFragment.transform.position = fragmentToRemove.transform.position;
 
     InsertFragmentInMapMatrix(map, y, x, finalFragment);
@@ -441,7 +462,12 @@ public class LevelManager : MonoBehaviour
     InsertFragmentInMapMatrix(map, 0, 0, mainFragment);
     CompleteFragment(mainFragment, map, 0, 0);
     FillLabyrinth(map);
-    PlaceFinalFragment(map);
+
+    PlaceExtraFragment(map, sharedInstance.finalLabFragments);
+    for(int i = 0; i < sharedInstance.nTraps; i++)
+    {
+      PlaceExtraFragment(map, sharedInstance.trapFragments);
+    }
 
     collectables.Init();
     collectables.SetTotalCollectables(CountCollectables(map));
